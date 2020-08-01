@@ -15,6 +15,7 @@ public class Box {
   protected color Background = color(255); //Boxes have a color
   protected color Border = color(0);       //Border color
   protected Boolean DrawBorder = true;     //Boxes may or may not show their border
+  protected int Radius = 0; 
   
   /// Constructors ///
   
@@ -114,7 +115,7 @@ public class Box {
       else {
         noStroke();
       }
-      rect(X, Y, Width, Height);
+      rect(X, Y, Width, Height, Radius);
     }
   }
   
@@ -140,6 +141,7 @@ public class Box {
   public void SetMargin(int m) { Margin = m; }
   public void SetBorder(color c) {Border = c; }
   public void SetBorderVisible(Boolean visible) { DrawBorder = visible; }
+  public void SetRadius(int radius) {Radius = radius; }
   
   public Box SetChild(Box child) {
     Child = child;

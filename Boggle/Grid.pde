@@ -34,11 +34,13 @@ public class Grid extends Box { //
     
     for(int i=0; i<Rows; i++) { // Update children
       for(int j=0; j<Columns; j++) {
-        Children[i][j].Update(
-          XCoords[j],
-          YCoords[i],
-          XCoords[j+1]-XCoords[j],
-          YCoords[i+1]-YCoords[i]);
+        if(Children[i][j] != null) {
+          Children[i][j].Update(
+            XCoords[j],
+            YCoords[i],
+            XCoords[j+1]-XCoords[j],
+            YCoords[i+1]-YCoords[i]);
+        }
       }
     }
   }
@@ -51,6 +53,18 @@ public class Grid extends Box { //
       YCoords[row],
       XCoords[column+1]-XCoords[column],
       YCoords[row+1]-YCoords[row],
+      margin);
+    return Children[row][column];
+  }
+  
+  public Box CreateChildBox(int margin, int row, int column, int rowSpan, int columnSpan) { 
+    System.out.println("Grid CreateChildBox(int,int,int)");
+    CheckExists(row,column);
+    Children[row][column] = new Box(
+      XCoords[column],
+      YCoords[row],
+      XCoords[column+columnSpan]-XCoords[column],
+      YCoords[row+rowSpan]-YCoords[row],
       margin);
     return Children[row][column];
   }
@@ -90,10 +104,18 @@ public class Grid extends Box { //
   
   public Box GetChild(int row, int column) { // Zero-indexed!
     this.CheckExists(row, column);
+    if( Children[row][column] == null) {
+      return new Box(
+        XCoords[column],
+        YCoords[row],
+        XCoords[column+1]-XCoords[column],
+        YCoords[row+1]-YCoords[row]);
+    }
     return Children[row][column];
+
   }
   public Box SetChild(Box child, int row, int column) {
-    this.CheckExists(row, column);
+    this.CheckExists(row,column);
     Children[row][column] = child;
     return Children[row][column];
   }
