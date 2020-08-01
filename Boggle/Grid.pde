@@ -4,88 +4,77 @@ class Grid
 Grid IS A Box, but instead of having 1 child, it has a 2-D array of children.
 */
 public class Grid extends Box { //  
-  protected int Rows = 0;
-  protected int Columns = 0;
-  protected int[] XCoords;
-  protected int[] YCoords;
-  protected Box[][] Children;
+  private int Rows = 0;
+  private int Columns = 0;
+  private int[] XCoords;
+  private int[] YCoords;
+  private GridBox[][] Children;
+  
+  private class GridBox extends Box { // Encapsulate row span and 
+    private int RowSpan, ColSpan;
+    protected GridBox(int x, int y, int w, int h, int r, int c) {
+      super(x,y,w,h);
+      RowSpan = r;
+      ColSpan = c;
+    }
+    public int GetRowSpan() { return RowSpan; }
+    public int GetColSpan() { return ColSpan; }
+  }
   
   /// Constructors ///
   
-  public Grid(Box parent, int margin, int rows, int columns) {
-    super(parent, margin); //<>//
+  public Grid(int rows, int columns) {
+    super(0); //<>//
     this.SetVisible(false);
     Rows = rows;
     Columns = columns;
     
-    Children = new Box[Rows][Columns]; // i.e. [Y][X]
-    Child = null;
+    Children = new GridBox[Rows][Columns]; // i.e. [Y][X]. All children are null at this point
+    SetChild(null);
     XCoords = new int[Columns + 1];
     YCoords = new int[Rows + 1];
-    this.CalculateCells();
   }
   
   /// Methods ///
   
-  public void Update() {
-    System.out.println("Grid Update(Box)");
-    super.Update();
-    this.CalculateCells();
-    
+  protected void UpdateSelf() {
+    super.UpdateSelf();
+    CalculateCells();
+  }
+  
+  protected void UpdateChild() {
     for(int i=0; i<Rows; i++) { // Update children
       for(int j=0; j<Columns; j++) {
         if(Children[i][j] != null) {
-          Children[i][j].Update(
+          GridBox temp = Children[i][j];
+          temp.SetDimensions(
             XCoords[j],
             YCoords[i],
-            XCoords[j+1]-XCoords[j],
-            YCoords[i+1]-YCoords[i]);
+            XCoords[j+temp.GetColSpan()]-XCoords[j],
+            YCoords[i+temp.GetRowSpan()]-YCoords[i]);
+          temp.Update();
         }
       }
     }
   }
   
-  public Box CreateChildBox(int margin, int row, int column) { 
-    System.out.println("Grid CreateChildBox(int,int,int)");
-    CheckExists(row,column);
-    Children[row][column] = new Box(
-      XCoords[column],
-      YCoords[row],
-      XCoords[column+1]-XCoords[column],
-      YCoords[row+1]-YCoords[row],
-      margin);
-    return Children[row][column];
-  }
-  
-  public Box CreateChildBox(int margin, int row, int column, int rowSpan, int columnSpan) { 
-    System.out.println("Grid CreateChildBox(int,int,int)");
-    CheckExists(row,column);
-    Children[row][column] = new Box(
-      XCoords[column],
-      YCoords[row],
-      XCoords[column+columnSpan]-XCoords[column],
-      YCoords[row+rowSpan]-YCoords[row],
-      margin);
-    return Children[row][column];
-  }
-  
   protected void CalculateCells() {
     for(int i=0; i<Columns; i++) { // Calculate X coordinates
-      XCoords[i] = X + (Width*i)/Columns;
+      XCoords[i] = GetX() + (GetWidth()*i)/Columns;
     }
-    XCoords[Columns] = X + Width;
+    XCoords[Columns] = GetX() + GetWidth();
     
     for(int i=0; i<Rows; i++) { // Calculate Y coordinates
-      YCoords[i] = Y + (Height*i)/Rows;
+      YCoords[i] = GetY() + (GetHeight()*i)/Rows;
     }
-    YCoords[Rows] = Y + Height;
+    YCoords[Rows] = GetY() + GetHeight();
   }
   
-  public void DrawChild() {
+  protected void DrawChild() {
     for(int i=0; i<Rows; i++) { // Draw children
       for(int j=0; j<Columns; j++) {
         if(Children[i][j] != null) {
-          Children[i][j].Draw();
+          Children[i][j].GetChild().Draw();
         }
       }
     }
@@ -101,23 +90,35 @@ public class Grid extends Box { //
   }
   
   /// Get/Set ///
-  
+  public <T extends Box> T SetDimensions(int x, int y, int w, int h) {
+    T temp = super.SetDimensions(x,y,w,h);
+    UpdateSelf();
+    return temp;
+  }
   public Box GetChild(int row, int column) { // Zero-indexed!
     this.CheckExists(row, column);
     if( Children[row][column] == null) {
-      return new Box(
+      return null;
+    }
+    else {
+      return Children[row][column].GetChild();
+    }
+  }
+  public <T extends Box> T SetChild(T child, int row, int column) {
+    return SetChild(child, row, column, 1, 1);
+  }
+  public <T extends Box> T SetChild(T child, int row, int column, int rowSpan, int colSpan) {
+    this.CheckExists(row,column);
+    this.CheckExists(row+rowSpan-1, column+colSpan-1);
+    Children[row][column] = new GridBox(
         XCoords[column],
         YCoords[row],
-        XCoords[column+1]-XCoords[column],
-        YCoords[row+1]-YCoords[row]);
-    }
-    return Children[row][column];
-
-  }
-  public Box SetChild(Box child, int row, int column) {
-    this.CheckExists(row,column);
-    Children[row][column] = child;
-    return Children[row][column];
+        XCoords[column+colSpan]-XCoords[column],
+        YCoords[row+rowSpan]-YCoords[row],
+        rowSpan,
+        colSpan);
+    Children[row][column].SetChild(child).Update();
+    return (T)Children[row][column].GetChild();
   }
   public int GetRows() { return Rows; }
   public int GetColumns() { return Columns; }

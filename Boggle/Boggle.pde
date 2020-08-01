@@ -1,5 +1,3 @@
-
-
 Boggle_Dice dice;
 String[] Letters;
 
@@ -7,22 +5,24 @@ PFont f;
 PFont h;
 int r, g, b;
 
-int DieCount = 5; // Number of dice along one edge of the boggle grid
+int DieCount = 4; // Number of dice along one edge of the boggle grid
 
-Boggle_Timer countDownTimer, jacob;
-int timeLeft;
+Boggle_Timer countDownTimer;
+int timeLeft = 65;
 
-Grid mainGrid; 
+Grid mainGrid; // Root graphical object
+TextBox timeBox; // Textbox displaying the time left
+int lastHeight;
+int lastWidth;
 
 void setup() 
 {
-  
   /*Determines size of graphics box, gets dice info from Boggle_Dice,
   creates the fonts, and randomly selects background color*/
   
   Window w = new Window();
-  w.ConfigureResizeable(1600, 1600);
-  size(1600, 1600);
+  w.ConfigureResizeable(800, 800);
+  size(1000, 1000);
   dice = new Boggle_Dice();
   Letters = dice.GetDice();
   f = createFont("Britannic", 40, true);
@@ -34,29 +34,28 @@ void setup()
   
   //1000 milliseconds = 1 second. This is the timer interval
   countDownTimer = new Boggle_Timer(1000);
-  jacob = countDownTimer;
-  timeLeft = 100;
   
-  mainGrid = new Grid(new Box(0, 0, width, height), 0, 3, 3);
-  Box boggleBox = mainGrid.CreateChildBox(20, 0, 0, 2, 2); // margin, row, col, rowSpan, colSpan
-  boggleBox.SetBackground(color(r,g,b));
-  boggleBox.SetRadius(20);
-  Grid boggleGrid = new Grid(boggleBox, 5, DieCount, DieCount);
-  boggleBox.SetChild(boggleGrid);
+  /// This grid contains all the other objects ///
+  mainGrid = new Grid(3, 3).SetDimensions(0,0,width,height).SetBackground(color(64)).SetVisible(true);
+  
+  /// Set up boggle grid ///
+  Grid boggleGrid = mainGrid.SetChild(new Box(20), 0, 0, 2, 2).SetBackground(color(r,g,b)).SetRadius(20)
+    .SetChild(new Grid(DieCount, DieCount)).SetMargin(20);
   
   for(int row=0; row<DieCount; row++) {
     for(int col=0; col<DieCount; col++) {
       System.out.println("Filling bogglebox. row = " + row + " col = " + col);
-      Box current = boggleGrid.GetChild(row, col);
-      System.out.println(current == null);
-      TextBox temp = (TextBox) boggleGrid.SetChild(new TextBox("o",current, 20),row, col);
-      temp.SetSize(100);
-      temp.SetAlignment(CENTER,CENTER);
-      temp.SetRadius(20);
-      temp.Update();
+      String text;
+      if (col*DieCount + row < Letters.length) { text = Letters[col*DieCount + row]; }
+      else { text = "Um..."; }
+      boggleGrid.SetChild(new TextBox(text, 10),row, col)
+        .SetSize(50)
+        .SetAlignment(CENTER,CENTER)
+        .SetRadius(20);
     }
   }
   
+  /// Textbox explaining the scoring ///
   String pointString = 
      "Point System:\n" +
      "3-4 letters = 1 point\n" +
@@ -64,11 +63,27 @@ void setup()
      "6 letters = 3 points\n" +
      "7 letters = 5 points\n" +
      "7+ letters = 11 points";
-  TextBox points = (TextBox)mainGrid.SetChild(new TextBox(pointString,mainGrid.GetChild(0,2),20),0,2);
-  points.SetSize(40);
-  points.SetAlignment(CENTER, CENTER);
-  points.SetRadius(20);
-  points.Update();
+  mainGrid.SetChild(new TextBox(pointString,20),0,2)
+    .SetSize(20)
+    .SetAlignment(CENTER, CENTER)
+    .SetRadius(20);
+    
+  /// Textbox containing the leaderboard ///
+  mainGrid.SetChild(new TextBox("Leaderboard",20),2,0)
+    .SetSize(20)
+    .SetAlignment(CENTER,TOP)
+    .SetRadius(20);
+    
+  /// Textbox containing the timer ///
+  timeBox = mainGrid.SetChild(new TextBox("Time Left",20),2,1)
+    .SetSize(20)
+    .SetAlignment(CENTER,CENTER)
+    .SetRadius(20);
+    
+  mainGrid.Update();
+  
+  lastHeight = height;
+  lastWidth = width;
 }
 
 //Feature where the board and timer resets when mouse is pressed. 
@@ -82,63 +97,22 @@ void setup()
 }*/
 
 void draw() {
+
+  timeBox.SetText("Time left: " + timeLeft/60 + ":" + nf(timeLeft%60,2));
+  
+  //Runs timer
+  if(countDownTimer.complete() == true) {
+      if(timeLeft > 0) {
+          timeLeft--;
+          countDownTimer.start();
+      }    
+  }
+  
   mainGrid.Draw();
-
-
-//int col, lastWidth,lastHeight;
-
-//Box b;
-//Grid g;
-//TextBox t;
- 
-//void setup() {
-//  Window w = new Window();
-//  w.ConfigureResizeable(500, 500);
-//  size(500, 500);
   
-//  int rows = 5;
-//  int columns = 5;
-  
-//  // Look! Boxes!
-//  b = new Box(0, 0, width, height);
-
-//  Box innermost = b.CreateChild(20, color(255))
-//    .CreateChild(30, color(128))
-//      .CreateChild(40, color(64));
-//  g = new Grid(innermost,20,rows,columns);
-//  innermost.SetChild(g);
-  
-//  Box temp = b;
-//  for(int i=0; i<rows; i++) {
-//    for(int j=0; j<columns; j++) {
-//      temp = g.CreateChildBox(0,i,j);
-//      temp.SetBackground(color((int)random(255),(int)random(255),(int)random(255)));
-//    }
-//  }
-//  t = (TextBox)temp.SetChild(new TextBox("Hi",temp,5));
-//  t.SetAlignment(CENTER, CENTER);
-//  t.SetSize(0);
-//  t.SetBackground(temp.Background);
-//  t.SetBorderVisible(false);
-//  t.Update();
-//  lastWidth = width;
-//  lastHeight = height;
-//}
- 
-//void draw() {
-//  if (frameCount % 300 == 1) {
-//    col = (int)random(0xff000000);
-//    b.SetBackground(col);
-//    t.SetText(str(col));
-//  }
-//  background(255,255,255);
-//  if(lastWidth != width || lastHeight != height)
-//  {
-//    lastWidth = width;
-//    lastHeight = height;
-//    int smaller = min(width, height);
-//    b.Update(0,0, smaller, smaller);
-//  }
-//  b.Draw();
-  
-//}
+  if(lastHeight != height || lastWidth != width) {
+    mainGrid.SetDimensions(0,0,width,height).Update();
+    lastHeight = height;
+    lastWidth = width;
+  }
+}

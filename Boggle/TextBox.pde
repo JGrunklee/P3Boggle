@@ -1,71 +1,53 @@
 public class TextBox extends Box {
   private String Text;
   private int TextX, TextY;
-  private color TextColor = color(0);
-  private Boolean Wrap = false;
-  private int Size = 12;
-  private int HorizontalAlignment = LEFT;
-  private int VerticalAlignment = TOP;
+  protected color TextColor = color(0);
+  protected Boolean Wrap = false;
+  protected int Size = 12;
+  protected int HorizontalAlignment = LEFT;
+  protected int VerticalAlignment = TOP;
   
   /// Constructors ///
   
-  public TextBox(String text, int x, int y, int w, int h, int m) {
-    super(x,y,w,h,m);
-    Text = text; TextX = X; TextY = Y;
-    CalculateTextPosition();
+  public TextBox(String text, int x, int y, int w, int h) {
+    super(x,y,w,h);
+    Text = text;
   }
   
-  public TextBox(String text, int x, int y, int w, int h, int m, color c) {
-    super(x,y,w,h,m,c);
-    Text = text; TextX = X; TextY = Y;
-    CalculateTextPosition();
-  }
-  
-  public TextBox(String text, Box parent, int margin) {
-    super(parent, margin);
-    Text = text; TextX = X; TextY = Y;
-    CalculateTextPosition();
-  }
-  
-  public TextBox(String text, Box parent, int margin, color c) {
-    super(parent, margin, c);
-    Text = text; TextX = X; TextY = Y;
-    CalculateTextPosition();
+  public TextBox(String text, int margin) {
+    super(margin);
+    Text = text;
   }
 
   /// Methods ///
   
-  public void Update() {
-    System.out.println("TextBox Update()"); //for debugging
-    CalculateDimensions();
+  protected void UpdateSelf() {
+    System.out.println("TextBox UpdateSelf()"); //for debugging
+    super.UpdateSelf();
     CalculateTextPosition();
-    if(Child != null)
-    {
-      Child.Update();
-    }
   }
   
   protected void CalculateTextPosition()
   {
     switch(HorizontalAlignment) {
       case LEFT:
-        TextX = X; break;
+        TextX = GetX(); break;
       case CENTER:
-        TextX = X + Width/2; break;
+        TextX = GetX() + GetWidth()/2; break;
       case RIGHT:
-        TextX = X + Width; break;
+        TextX = GetX() + GetWidth(); break;
       default:
-        TextX = X; break;
+        TextX = GetX(); break;
     }
     switch(VerticalAlignment) {
       case TOP:
-        TextY = Y; break;
+        TextY = GetY(); break;
       case BOTTOM:
-        TextY = Y + Height; break;
+        TextY = GetY() + GetHeight(); break;
       case CENTER:
-        TextY = Y + Height/2; break;
+        TextY = GetY() + GetHeight()/2; break;
       default:
-        TextY = Y; break;
+        TextY = GetY(); break;
     }
   }
   
@@ -76,7 +58,7 @@ public class TextBox extends Box {
       textAlign(HorizontalAlignment, VerticalAlignment);
       textSize(Size);
       if(Wrap) {
-        text(Text,TextX,TextY, X+Width, Y+Width);
+        text(Text,TextX,TextY, X+GetWidth(), Y+GetWidth());
       }
       else {
         text(Text, TextX, TextY);
@@ -86,31 +68,32 @@ public class TextBox extends Box {
   
   /// Get/Set ///
   
-  public void SetAlignment(int xAlign, int yAlign) {
+  public <T extends TextBox> T SetAlignment(int xAlign, int yAlign) {
     if(xAlign == LEFT || xAlign == CENTER || xAlign == RIGHT) {
       HorizontalAlignment = xAlign;
     }
     else {
-      System.out.println("TextBox SetAlignment(int,int): invalid horizontal alignment");
+      throw new IllegalArgumentException("TextBox SetAlignment(int,int): invalid horizontal alignment");
     }
     if(yAlign == TOP || yAlign == BOTTOM || yAlign == CENTER) {
       VerticalAlignment = yAlign;
     }
     else {
-      System.out.println("TextBox SetAlignment(int,int): invalid vertical alignment");
+      throw new IllegalArgumentException("TextBox SetAlignment(int,int): invalid vertical alignment");
     }
+    return (T)this;
   }
-  public void SetText(String text) { Text = text; }
-  public void SetSize(int size) {
+  public <T extends TextBox> T SetSize(int size) {
     if(size == 0) {
-      Size = Height;
+      Size = GetHeight();
     }
     else {
       Size = size;
     }
-      
-  }
+    return (T) this;
+  }  
+  public <T extends TextBox> T SetText(String text)  { Text = text;   return (T)this; }
   public String GetText() { return Text; }
-  public void SetWrap(Boolean wrap) { Wrap = wrap; }
-  public void SetTextColor(color c) {TextColor = c; }
+  public <T extends TextBox> T SetWrap(Boolean wrap) { Wrap = wrap;   return (T)this; }
+  public <T extends TextBox> T SetTextColor(color c) { TextColor = c; return (T)this; }
 }
