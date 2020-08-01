@@ -70,6 +70,17 @@ public class Grid extends Box { //
     YCoords[Rows] = GetY() + GetHeight();
   }
   
+  protected void CheckExists(int row, int column) {
+    if(row < 0 || row >= Rows) {
+      throw new IllegalArgumentException("Grid: Row " + row + " does not exist.");
+    }
+    if(column < 0 || column >= Columns) {
+      throw new IllegalArgumentException("Grid: Column " + column + " does not exist.");
+    }
+  }
+  
+  /// Draw methods ///
+  
   protected void DrawChild() {
     for(int i=0; i<Rows; i++) { // Draw children
       for(int j=0; j<Columns; j++) {
@@ -77,15 +88,6 @@ public class Grid extends Box { //
           Children[i][j].GetChild().Draw();
         }
       }
-    }
-  }
-  
-  protected void CheckExists(int row, int column) {
-    if(row < 0 || row >= Rows) {
-      throw new IllegalArgumentException("Grid: Row " + row + " does not exist.");
-    }
-    if(column < 0 || column >= Columns) {
-      throw new IllegalArgumentException("Grid: Column " + column + " does not exist.");
     }
   }
   

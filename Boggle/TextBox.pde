@@ -2,8 +2,9 @@ public class TextBox extends Box {
   private String Text;
   private int TextX, TextY;
   protected color TextColor = color(0);
-  protected Boolean Wrap = false;
+  protected boolean Wrap = false;
   protected int Size = 12;
+  private boolean AutoSizeText = false;
   protected int HorizontalAlignment = LEFT;
   protected int VerticalAlignment = TOP;
   
@@ -25,6 +26,9 @@ public class TextBox extends Box {
     System.out.println("TextBox UpdateSelf()"); //for debugging
     super.UpdateSelf();
     CalculateTextPosition();
+    if(AutoSizeText) {
+      SetSize(0);
+    }
   }
   
   protected void CalculateTextPosition()
@@ -51,7 +55,9 @@ public class TextBox extends Box {
     }
   }
   
-  public void DrawSelf() {
+  /// Draw methods ///
+  
+  protected void DrawSelf() {
     super.DrawSelf();
     if(IsVisible) {
       fill(TextColor);
@@ -85,12 +91,14 @@ public class TextBox extends Box {
   }
   public <T extends TextBox> T SetSize(int size) {
     if(size == 0) {
-      Size = GetHeight();
+      Size = GetHeight() - 2*GetMargin();
+      AutoSizeText = true;
     }
     else {
       Size = size;
+      AutoSizeText = false;
     }
-    return (T) this;
+    return (T)this;
   }  
   public <T extends TextBox> T SetText(String text)  { Text = text;   return (T)this; }
   public String GetText() { return Text; }

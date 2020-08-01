@@ -12,6 +12,8 @@ int timeLeft = 65;
 
 Grid mainGrid; // Root graphical object
 TextBox timeBox; // Textbox displaying the time left
+TextBox DiePointers[][];
+Button myButton;
 int lastHeight;
 int lastWidth;
 
@@ -21,9 +23,10 @@ void setup()
   creates the fonts, and randomly selects background color*/
   
   Window w = new Window();
-  w.ConfigureResizeable(800, 800);
-  size(1000, 1000);
+  w.ConfigureResizeable(400, 400);
+  size(400, 400);
   dice = new Boggle_Dice();
+  DiePointers = new TextBox[DieCount][DieCount];
   Letters = dice.GetDice();
   f = createFont("Britannic", 40, true);
   h = createFont("Franklin Gothic Book", 20, true);
@@ -46,12 +49,17 @@ void setup()
     for(int col=0; col<DieCount; col++) {
       System.out.println("Filling bogglebox. row = " + row + " col = " + col);
       String text;
-      if (col*DieCount + row < Letters.length) { text = Letters[col*DieCount + row]; }
-      else { text = "Um..."; }
-      boggleGrid.SetChild(new TextBox(text, 10),row, col)
-        .SetSize(50)
-        .SetAlignment(CENTER,CENTER)
+      if (col*DieCount + row < Letters.length) {
+        text = Letters[col*DieCount + row];
+      }
+      else {
+        text = "?";
+      }
+      TextBox temp = boggleGrid.SetChild(new TextBox(text, 10),row, col)
+        .SetSize(0) // Auto-size
+        .SetAlignment(CENTER,TOP)
         .SetRadius(20);
+      DiePointers[row][col] = temp;
     }
   }
   
@@ -80,6 +88,13 @@ void setup()
     .SetAlignment(CENTER,CENTER)
     .SetRadius(20);
     
+  myButton = mainGrid.SetChild(new Button("New Board", 20),2,2)
+    .SetPressedBackground(color(200))
+    .SetClickCommand(new NewBoardCallback())
+    .SetAlignment(CENTER,CENTER)
+    .SetSize(20)
+    .SetRadius(20);
+    
   mainGrid.Update();
   
   lastHeight = height;
@@ -95,6 +110,25 @@ void setup()
       countDownTimer.start();
   }  
 }*/
+
+public class NewBoardCallback implements ClickableCallback {
+  public void Callback(Object parameter) {
+    dice.Generate();
+    Letters = dice.GetDice();
+    for(int row=0; row<DieCount; row++) {
+      for(int col=0; col<DieCount; col++) {
+        String text;
+          if (col*DieCount + row < Letters.length) {
+            text = Letters[col*DieCount + row];
+          }
+          else {
+            text = "?";
+          }
+        DiePointers[row][col].SetText(text);
+      }
+    }
+  }
+}
 
 void draw() {
 
@@ -115,4 +149,12 @@ void draw() {
     lastHeight = height;
     lastWidth = width;
   }
+}
+
+void mousePressed() {
+  myButton.MousePressedAction(null);
+}
+
+void mouseReleased() {
+  myButton.MouseReleasedAction(null);
 }

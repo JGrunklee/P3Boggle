@@ -134,6 +134,7 @@ public class Box {
   public int GetY() { return Y; }
   public int GetWidth() { return Width; }
   public int GetHeight() { return Height; }
+  public int GetMargin() { return Margin; }
   public <T extends Box> T SetDimensions(int x, int y, int w, int h) {
     X = x; Y = y;
     Width = w; Height = h;
