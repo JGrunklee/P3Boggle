@@ -5,6 +5,11 @@ class Box
 
 Represents a Processing 3 rectangle (drawn with rect() function).
 Supports nesting (inner shape(s) with fixed margin), as well as auto-resizing. 
+
+Public setter methods implement a fluent interface (i.e. encourages method chaining)
+by returning an instance to the calling object. This object might be a derived type, hence the use of generics.
+Please continue the use of this pattern in derived classes as well.
+
 */
 public class Box {
   
@@ -38,7 +43,7 @@ public class Box {
    * This holds true even if this box has a parent.
    */
   public Box(int x, int y, int w, int h) {
-    System.out.println("Box(int x, int y, int w, int h)");
+    //System.out.println("Box(int x, int y, int w, int h)");
     X = x; Y = y;
     Width = w; Height = h;
     ResizeWithParent = false;
@@ -69,7 +74,7 @@ public class Box {
    * Does nothing for boxes with manually-set dimensions or no parent.
    */
   protected void UpdateSelf() {
-    System.out.println("Box UpdateSelf()");
+    //System.out.println("Box UpdateSelf()");
     if(Parent != null && ResizeWithParent) {
       X = Parent.GetX() + Margin;
       Y = Parent.GetY() + Margin;
@@ -125,10 +130,6 @@ public class Box {
   }
   
   /// Get/Set ///
-  
-  // Public setter methods implement a fluent interface (i.e. encourages method chaining)
-  // by returning an instance to the calling object. This object might be a derived type, hence the use of generics.
-  // Continue the use of this pattern in derived classes as well.
   
   public int GetX() { return X; }
   public int GetY() { return Y; }

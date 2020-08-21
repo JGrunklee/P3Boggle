@@ -1,19 +1,23 @@
-Boggle_Dice dice;
+BoggleDice dice;
 String[] Letters;
 
-PFont f;
-PFont h;
-int r, g, b;
+PFont f, h;
 
-int DieCount = 4; // Number of dice along one edge of the boggle grid
+// Game settings
+final int DieCount = 5; // Number of dice along one edge of the boggle grid
+final int GameDuration = 10; //number of seconds the games should last
+final int Radius = 30; //Global box radius
 
+// Variables that will get moved into a BoggleGame object later
+int timeLeft;
 Boggle_Timer countDownTimer;
-int timeLeft = 65;
-
 Grid mainGrid; // Root graphical object
+Grid boggleGrid; // The grid with all the boggle letters
 TextBox timeBox; // Textbox displaying the time left
-TextBox DiePointers[][];
-Button myButton;
+TextBox DiePointers[][]; // Textboxes for each boggle die letter
+Button myButton, timesUpButton;
+
+// Variables for detecting screen resizing
 int lastHeight;
 int lastWidth;
 
@@ -22,27 +26,27 @@ void setup()
   /*Determines size of graphics box, gets dice info from Boggle_Dice,
   creates the fonts, and randomly selects background color*/
   
+  // Configure window
   Window w = new Window();
-  w.ConfigureResizeable(400, 400);
-  size(400, 400);
-  dice = new Boggle_Dice();
-  DiePointers = new TextBox[DieCount][DieCount];
-  Letters = dice.GetDice();
+  w.ConfigureResizeable(600, 600); // Minimum screen size
+  size(1000, 1000); // Screen size on startup
+  
+  // Colors and fonts
   f = createFont("Britannic", 40, true);
   h = createFont("Franklin Gothic Book", 20, true);
-  r = int(random(256));
-  g = int(random(256));
-  b = int(random(256));
-  fill(r,g,b);
   
-  //1000 milliseconds = 1 second. This is the timer interval
-  countDownTimer = new Boggle_Timer(1000);
+  // Set up game backend elments  
+  dice = new BoggleDice(BoggleDiceType.BIG);
+  DiePointers = new TextBox[DieCount][DieCount];
+  Letters = dice.GetDice();
+  countDownTimer = new Boggle_Timer(1000); //1000 milliseconds = 1 second. This is the timer interval
+  timeLeft = GameDuration;
   
   /// This grid contains all the other objects ///
   mainGrid = new Grid(3, 3).SetDimensions(0,0,width,height).SetBackground(color(64)).SetVisible(true);
   
   /// Set up boggle grid ///
-  Grid boggleGrid = mainGrid.SetChild(new Box(20), 0, 0, 2, 2).SetBackground(color(r,g,b)).SetRadius(20)
+  boggleGrid = mainGrid.SetChild(new Box(20), 0, 0, 2, 2).SetBackground(randomColor()).SetRadius(Radius)
     .SetChild(new Grid(DieCount, DieCount)).SetMargin(20);
   
   for(int row=0; row<DieCount; row++) {
@@ -58,7 +62,7 @@ void setup()
       TextBox temp = boggleGrid.SetChild(new TextBox(text, 10),row, col)
         .SetSize(0) // Auto-size
         .SetAlignment(CENTER,TOP)
-        .SetRadius(20);
+        .SetRadius(Radius);
       DiePointers[row][col] = temp;
     }
   }
@@ -74,26 +78,36 @@ void setup()
   mainGrid.SetChild(new TextBox(pointString,20),0,2)
     .SetSize(20)
     .SetAlignment(CENTER, CENTER)
-    .SetRadius(20);
+    .SetRadius(Radius);
     
   /// Textbox containing the leaderboard ///
   mainGrid.SetChild(new TextBox("Leaderboard",20),2,0)
     .SetSize(20)
     .SetAlignment(CENTER,TOP)
-    .SetRadius(20);
+    .SetRadius(Radius);
     
   /// Textbox containing the timer ///
   timeBox = mainGrid.SetChild(new TextBox("Time Left",20),2,1)
+    .SetTextColor(color(255,0,0))
     .SetSize(20)
     .SetAlignment(CENTER,CENTER)
-    .SetRadius(20);
+    .SetRadius(Radius);
     
   myButton = mainGrid.SetChild(new Button("New Board", 20),2,2)
     .SetPressedBackground(color(200))
     .SetClickCommand(new NewBoardCallback())
     .SetAlignment(CENTER,CENTER)
     .SetSize(20)
-    .SetRadius(20);
+    .SetRadius(Radius);
+    
+  timesUpButton = new Button("Time's Up!", 0)
+    .SetPressedBackground(color(200))
+    .SetClickCommand(new TimeUpCallback())
+    .SetTextColor(randomColor())
+    .SetAlignment(CENTER,CENTER)
+    .SetSize(40)
+    .SetRadius(Radius/2)
+    .SetBorder(color(255,0,0));
     
   mainGrid.Update();
   
@@ -111,10 +125,13 @@ void setup()
   }  
 }*/
 
+/// The code inside of Callback() happens every time you click the button ///
 public class NewBoardCallback implements ClickableCallback {
   public void Callback(Object parameter) {
     dice.Generate();
     Letters = dice.GetDice();
+    mainGrid.GetChild(0,0).SetBackground(randomColor());
+    myButton.SetPressedBackground(randomColor());
     for(int row=0; row<DieCount; row++) {
       for(int col=0; col<DieCount; col++) {
         String text;
@@ -127,6 +144,13 @@ public class NewBoardCallback implements ClickableCallback {
         DiePointers[row][col].SetText(text);
       }
     }
+    timeLeft = GameDuration;
+  }
+}
+
+public class TimeUpCallback implements ClickableCallback {
+  public void Callback(Object parameter) {
+    mainGrid.SetChild(null,1,1);
   }
 }
 
@@ -139,11 +163,16 @@ void draw() {
       if(timeLeft > 0) {
           timeLeft--;
           countDownTimer.start();
-      }    
+          if (timeLeft == 0) {
+            mainGrid.SetChild(timesUpButton,1,1);
+          }
+      }
   }
   
+  // Draw everything
   mainGrid.Draw();
   
+  // Handle resize
   if(lastHeight != height || lastWidth != width) {
     mainGrid.SetDimensions(0,0,width,height).Update();
     lastHeight = height;
@@ -152,9 +181,27 @@ void draw() {
 }
 
 void mousePressed() {
-  myButton.MousePressedAction(null);
+  if(myButton.IsInside(mouseX, mouseY)) {
+    myButton.MousePressedAction(null);
+  }
+  if(timesUpButton.IsInside(mouseX, mouseY)) {
+    timesUpButton.MousePressedAction(null);
+  }
 }
 
 void mouseReleased() {
-  myButton.MouseReleasedAction(null);
+  if(myButton.GetIsPressed()) {
+    myButton.MouseReleasedAction(null);
+  }
+  if(timesUpButton.IsInside(mouseX, mouseY)) {
+    timesUpButton.MouseReleasedAction(null);
+  }
+}
+
+color randomColor() {
+  int r, g, b;
+  r = int(random(256));
+  g = int(random(256));
+  b = int(random(256));
+  return color(r,g,b);
 }

@@ -46,4 +46,6 @@ public class Button extends TextBox implements Clickable {
   
   public <T extends Button> T SetPressedBackground(color c) { PressedBackground = c; return (T)this; }
   public <T extends Button> T SetClickCommand(ClickableCallback ccb) { ClickCommand = ccb; return (T)this;}
-}
+  public boolean GetIsPressed() { return IsPressed; }
+
+} // END class Button

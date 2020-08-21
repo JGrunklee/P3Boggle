@@ -23,7 +23,7 @@ public class TextBox extends Box {
   /// Methods ///
   
   protected void UpdateSelf() {
-    System.out.println("TextBox UpdateSelf()"); //for debugging
+    //System.out.println("TextBox UpdateSelf()"); //for debugging
     super.UpdateSelf();
     CalculateTextPosition();
     if(AutoSizeText) {

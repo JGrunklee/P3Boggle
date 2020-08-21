@@ -112,15 +112,21 @@ public class Grid extends Box { //
   public <T extends Box> T SetChild(T child, int row, int column, int rowSpan, int colSpan) {
     this.CheckExists(row,column);
     this.CheckExists(row+rowSpan-1, column+colSpan-1);
-    Children[row][column] = new GridBox(
-        XCoords[column],
-        YCoords[row],
-        XCoords[column+colSpan]-XCoords[column],
-        YCoords[row+rowSpan]-YCoords[row],
-        rowSpan,
-        colSpan);
-    Children[row][column].SetChild(child).Update();
-    return (T)Children[row][column].GetChild();
+    if(child == null)
+    {
+      Children[row][column] = null;
+      return null;
+    } else {
+      Children[row][column] = new GridBox(
+          XCoords[column],
+          YCoords[row],
+          XCoords[column+colSpan]-XCoords[column],
+          YCoords[row+rowSpan]-YCoords[row],
+          rowSpan,
+          colSpan);
+      Children[row][column].SetChild(child).Update();
+      return (T)Children[row][column].GetChild();
+    }
   }
   public int GetRows() { return Rows; }
   public int GetColumns() { return Columns; }

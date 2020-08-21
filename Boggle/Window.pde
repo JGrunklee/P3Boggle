@@ -5,6 +5,7 @@ import java.awt.Dimension;
 public class Window {
   public static final int WINDOW_DEFAULT_HEIGHT_MIN = 300;
   public static final int WINDOW_DEFAULT_WIDTH_MIN = 400;
+  
   public void ConfigureResizeable() {
     ConfigureResizeable(WINDOW_DEFAULT_WIDTH_MIN, WINDOW_DEFAULT_HEIGHT_MIN);
   }
